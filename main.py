@@ -16,27 +16,28 @@ def input_error(func):
 
 
 def hello():
-    return 'hello'
+    return 'How can I help you?'
 
 
 @input_error
-def add(*args):
-    name, phone = args
+def add(name: str, phone: str) -> str:
     USERS[name] = phone
     return f'I`m added new user {name}, his phone is {phone}.'
 
 
 @input_error
-def change(*args):
-    name, new_phone = args
+def change(name: str, new_phone: str) -> str:
     old_phone = USERS[name]
     USERS[name] = new_phone
     return f'I`m changed the phone number of the user {name} with old phone number {old_phone} to new {new_phone}.'
 
 
 @input_error
-def phone(args):
-    return f'The phone number of the user {args} is {USERS[args]}.'
+def phone(name: str) -> str:
+    if not USERS.get(name):
+        return 'Add some users to start, please.'
+    else:
+        return f'The phone number of the user {name} is {USERS[name]}.'
 
 
 @input_error
@@ -56,10 +57,10 @@ def close():
 
 @input_error
 def show_commands():
-    result = ''
+    outcome = ''
     for key in COMMANDS.keys():
-        result += key + '\n'
-    return result
+        outcome += key + '\n'
+    return outcome
 
 
 COMMANDS = {
@@ -75,33 +76,36 @@ COMMANDS = {
 }
 
 
-@input_error
-def command_handler(user_input: str):
-    if user_input.lower() in COMMANDS:
-        action = COMMANDS[user_input.lower()]
-        args = ''
-        action = action()
-    else:
-        command, *args = user_input.split()
-        action = COMMANDS[command.lower()]
-        action = action(*args)
-    return action
+def unknown_command(command: str) -> str:
+    return f'Unknown command: "{command}", check your input.'
 
 
 def main():
     while True:
-        user_input = input('Waiting for command (if you want to see all availble commands enter "commands"): ')
+        user_input = input('Waiting for command (if you want to see all available commands enter "commands"): ')
         if not user_input:
-            print('Give me the command!')
+            print('Give me the command, please!')
             continue
-        outcome = command_handler(user_input)
-        if not outcome:
-            print('Good bye!', end = '')
-            break
-        elif outcome == 'hello':
-            print('How can I help you?')
-            continue
-        print(outcome)
+        if user_input.lower() in COMMANDS:
+            handler = COMMANDS[user_input.lower()]()
+            if not handler:
+                print('Good bye!')
+                break
+            else:
+                print(handler)
+                continue
+        command, *args = user_input.strip().split(' ')
+        if COMMANDS.get(command.lower()):
+            action = COMMANDS.get(command.lower())
+            if len(args) > 1:
+                name, phone = args
+                handler = action(name, phone)
+                print(handler)
+            else:
+                handler = action(args[0])
+                print(handler)
+        else:
+            print(unknown_command(command))
 
 
 if __name__ == '__main__':
