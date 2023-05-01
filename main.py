@@ -52,7 +52,7 @@ def show_all():
 
 
 def close():
-    return False
+    return 'Good bye!'
 
 
 @input_error
@@ -89,7 +89,7 @@ def main():
         if user_input.lower() in COMMANDS:
             handler = COMMANDS[user_input.lower()]()
             if not handler:
-                print('Good bye!')
+                print(handler)
                 break
             else:
                 print(handler)
